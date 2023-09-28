@@ -6,14 +6,7 @@ import (
 	"github.com/jbert/aoc/astar"
 )
 
-const TILE_UNWALKABLE = 100
-
-type TileInstance struct {
-	Tile
-
-	world  *World
-	coords TileCoord
-}
+const TILE_UNWALKABLE = 100000
 
 func (t *TileInstance) Cost(w *World) float64 {
 	for _, actor := range w.actors {
@@ -43,7 +36,7 @@ func (w *World) Weight(from TileInstance, to TileInstance) float64 {
 	return math.Abs(float64(from.coords.X)-float64(to.coords.X)) + math.Abs(float64(from.coords.Y)-float64(to.coords.Y))
 }
 
-func (w *World) FindPath(a Actor, dest TileCoord) []TileInstance {
+func (w *World) FindPath(a ActorInstance, dest TileCoord) []TileInstance {
 	apos, err := w.GetTile(a.GetPos())
 	if err != nil {
 		return []TileInstance{}

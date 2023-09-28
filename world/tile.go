@@ -1,6 +1,7 @@
 package world
 
 import (
+	"image"
 	"image/color"
 	"rpg/graphics"
 )
@@ -30,11 +31,18 @@ const TileHeight = 50
 var BorderColour = color.RGBA{0, 0, 0, 255}
 
 type Tile struct {
-	Colour color.RGBA
+	Image image.Image
 
 	Flags TileFlags
 
 	movecost float64
+}
+
+type TileInstance struct {
+	Tile
+
+	world  *World
+	coords TileCoord
 }
 
 func (t *Tile) Draw(xc, yc int, flags TileFlags) {
@@ -43,9 +51,11 @@ func (t *Tile) Draw(xc, yc int, flags TileFlags) {
 
 	allFlags := t.Flags | flags
 
+	imgWidth, imgHeight := t.Image.Bounds().Max.X, t.Image.Bounds().Max.Y
+
 	for x := 0; x < TileWidth; x++ {
 		for y := 0; y < TileHeight; y++ {
-			graphics.SetPixel(int32(x+startX), int32(y+startY), t.Colour)
+			graphics.SetPixel(int32(x+startX), int32(y+startY), t.Image.At(int(x)*imgWidth/int(TileWidth), int(y)*imgHeight/int(TileHeight)))
 
 			if x > TileWidth*39/40 || y > TileHeight*39/40 || x < TileWidth*1/40 || y < TileHeight*1/40 {
 				if allFlags.PlayerTarget() {

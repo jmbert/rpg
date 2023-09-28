@@ -1,0 +1,9 @@
+{
+    "image": "tile_walkable.png",
+
+    "flags" : {
+        "WALKABLE": true
+    },
+
+    "movementCost" : 1
+}

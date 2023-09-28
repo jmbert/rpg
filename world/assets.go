@@ -1,9 +1,9 @@
 package world
 
 import (
+	"encoding/json"
 	"fmt"
 	"image"
-	"image/color"
 	_ "image/jpeg"
 	_ "image/png"
 	"log"
@@ -14,15 +14,119 @@ import (
 	"unicode"
 )
 
-var TestTileWalkable = Tile{color.RGBA{R: 255, G: 255, B: 255, A: 255}, WALKABLE, 1}
-var TestTileUnwalkable = Tile{color.RGBA{R: 127, G: 127, B: 127, A: 255}, 0, TILE_UNWALKABLE}
+var Actors map[string]Actor = make(map[string]Actor, 0)
 
-var indexMap = map[int]Tile{
-	0: TestTileUnwalkable,
-	1: TestTileWalkable,
+type Assets struct {
+	Map    MapJSON
+	Actors []string
 }
 
-func DecipherWorldMap(file string, world *World) {
+type MapJSON struct {
+	Dat      string
+	IndexMap map[string]string
+}
+
+type ActorJSON struct {
+	Image string
+}
+
+func InterpretAssets() (World, error) {
+	assetlocs, err := os.ReadFile("assets/assets.json")
+	if err != nil {
+		return World{}, err
+	}
+
+	var assets Assets
+
+	err = json.Unmarshal(assetlocs, &assets)
+	if err != nil {
+		return World{}, err
+	}
+	var w World
+
+	indexMap := make(map[int]Tile)
+
+	for indexStr, tileName := range assets.Map.IndexMap {
+		index, err := strconv.Atoi(indexStr)
+		if err != nil {
+			return w, err
+		}
+		tile, err := decipherTile("assets/tiles/" + tileName + ".json")
+		if err != nil {
+			return w, err
+		}
+		indexMap[index] = tile
+	}
+
+	var wmap Map
+	DecipherWorldMap("assets/dat/maps/"+assets.Map.Dat+".map", &wmap, indexMap)
+	w.Map = wmap
+
+	for _, actorf := range assets.Actors {
+		actordat, err := os.ReadFile("assets/actors/" + actorf + ".json")
+		if err != nil {
+			return w, err
+		}
+
+		var actorjson ActorJSON
+		err = json.Unmarshal(actordat, &actorjson)
+		if err != nil {
+			return w, err
+		}
+		var actor Actor
+		actor.image = getImage("assets/images/actors/" + actorjson.Image)
+
+		Actors[actorf] = actor
+	}
+
+	return w, nil
+}
+
+type FlagsJSON struct {
+	Walkable bool
+}
+
+func (f *FlagsJSON) toInt() TileFlags {
+	var flags TileFlags
+
+	if f.Walkable {
+		flags += WALKABLE
+	}
+
+	return flags
+}
+
+type TileJSON struct {
+	Image        string
+	Flags        FlagsJSON
+	MovementCost float64
+}
+
+func decipherTile(fileName string) (Tile, error) {
+
+	file, err := os.ReadFile(fileName)
+	if err != nil {
+		return Tile{}, err
+	}
+
+	var tile TileJSON
+
+	err = json.Unmarshal(file, &tile)
+	if err != nil {
+		return Tile{}, err
+	}
+	var t Tile
+
+	t.Image = getImage("assets/images/tiles/" + tile.Image)
+
+	t.movecost = tile.MovementCost
+
+	t.Flags = tile.Flags.toInt()
+
+	return t, nil
+}
+
+func DecipherWorldMap(file string, wmap *Map, indexMap map[int]Tile) {
 	filecontentsb, err := os.ReadFile(file)
 	if err != nil {
 		log.Fatalln(err)
@@ -44,12 +148,12 @@ func DecipherWorldMap(file string, world *World) {
 		for x := 0; x < TilesX; x++ {
 			row = append(row, indexMap[index])
 		}
-		world.tiles = append(world.tiles, row)
+		wmap.tiles = append(wmap.tiles, row)
 	}
 
 	for filecontents != "" {
 		filecontents = decipherWS(filecontents)
-		filecontents = decipherLine(filecontents, world)
+		filecontents = decipherLine(filecontents, wmap, indexMap)
 	}
 
 	fmt.Printf("Deciphered world map %s\n", file)
@@ -66,7 +170,7 @@ func decipherWS(file string) string {
 	return file[i:]
 }
 
-func decipherLine(line string, world *World) string {
+func decipherLine(line string, world *Map, indexMap map[int]Tile) string {
 	i := 0
 	if line[i] != '[' {
 		log.Fatalf("%d:Expected '[', found %c\n", i, line[i])
@@ -112,11 +216,11 @@ func decipherLine(line string, world *World) string {
 		log.Fatalln(err)
 	}
 
-	world.SetTile(indexMap[index], TileCoord{x, y})
+	world.tiles[x][y] = indexMap[index]
 	return line[i:]
 }
 
-func GetImage(file string) image.Image {
+func getImage(file string) image.Image {
 	var img image.Image
 	f, err := os.Open(file)
 	if err != nil {

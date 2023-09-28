@@ -1,14 +1,14 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"rpg/graphics"
 	"rpg/world"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-var globalWorld world.World
+var globalWorld *world.World
 
 var inputMap = graphics.KeyInput{
 	"mbleft": move,
@@ -24,7 +24,7 @@ func move(event graphics.Event) {
 
 	coordX, coordY := pCoordX/world.TileWidth, pCoordY/world.TileHeight
 
-	dest := world.TileCoord{int(coordX), int(coordY)}
+	dest := world.TileCoord{X: int(coordX), Y: int(coordY)}
 
 	globalWorld.GetPlayer().Dest = dest
 }
@@ -32,18 +32,16 @@ func move(event graphics.Event) {
 func main() {
 	graphics.Initialise(500, 500, 0, sdl.RENDERER_PRESENTVSYNC|sdl.RENDERER_ACCELERATED)
 
-	globalWorld = world.NewWorld()
+	wworld, err := world.InterpretAssets()
+	globalWorld = &wworld
 
-	world.DecipherWorldMap("assets/testmap.map", &globalWorld)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
-	player := world.NewActor(world.TileCoord{5, 0}, world.GetImage("assets/testplayer.png"))
-	globalWorld.SetPlayer(player)
+	globalWorld.NewActor(world.Actors["testplayer"], world.TileCoord{X: 1, Y: 0})
 
-	enemy := world.NewActor(world.TileCoord{1, 2}, world.GetImage("assets/testenemy.png"))
-	enemy.Dest = globalWorld.GetPlayer().GetPos()
-	globalWorld.NewActor(enemy)
-	tmp, _ := globalWorld.GetTile(world.TileCoord{2, 1})
-	fmt.Printf("%v\n", tmp.Flags.Walkable())
+	globalWorld.NewActor(world.Actors["testenemy"], world.TileCoord{X: 1, Y: 9})
 
 	for {
 		code := graphics.MainloopIter(inputMap)

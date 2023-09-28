@@ -1,0 +1,14 @@
+{
+    "map": {
+        "dat": "testmap",
+        "indexMap": {
+            "0": "tile_unwalkable",
+            "1": "tile_walkable"
+        }
+    },
+
+    "actors" : [
+        "testplayer",
+        "testenemy"
+    ]
+}

@@ -1,14 +1,14 @@
 package world
 
 import (
-	"fmt"
 	"image"
+	"image/color"
 	"math"
 	"rpg/graphics"
 	"rpg/rmaths"
 )
 
-const MOVEFRAME = 10
+const MOVEFRAME = 7
 
 var ActorWidth = TileWidth * 0.6
 var ActorHeight = TileHeight * 0.6
@@ -27,22 +27,26 @@ func (t *TileCoord) Sub(t2 TileCoord) TileCoord {
 }
 
 func (t *TileCoord) Angle() float64 {
-	return math.Acos(float64(t.X) / math.Sqrt(float64(t.X*t.X)+float64(t.Y*t.Y)))
+	return math.Atan2(float64(t.Y), float64(t.X))
 }
 
 type Actor struct {
+	image image.Image
+}
+
+type ActorInstance struct {
+	Actor
+
 	pos TileCoord
 
 	path []TileInstance
-
-	image image.Image
 
 	faceAngle float64
 
 	Dest TileCoord
 }
 
-func (s *Actor) Draw() {
+func (s *ActorInstance) Draw() {
 	var startX = s.pos.X*TileWidth + TileWidth/2
 	var startY = s.pos.Y*TileHeight + TileHeight/2
 
@@ -57,21 +61,21 @@ func (s *Actor) Draw() {
 	}
 }
 
-func (s *Actor) Rotate(angle float64) {
+func (s *ActorInstance) Rotate(angle float64) {
 	s.faceAngle = angle
 }
 
-func (s *Actor) GetPos() TileCoord {
+func (s *ActorInstance) GetPos() TileCoord {
 	return s.pos
 }
 
-func (s *Actor) SetPos(pos TileCoord, world World) {
+func (s *ActorInstance) SetPos(pos TileCoord, world World) {
 	if s.CheckPos(pos, world) {
 		s.pos = pos
 	}
 }
 
-func (s *Actor) CheckPos(pos TileCoord, world World) bool {
+func (s *ActorInstance) CheckPos(pos TileCoord, world World) bool {
 
 	if pos.X < 0 || pos.Y < 0 {
 		return false
@@ -83,7 +87,6 @@ func (s *Actor) CheckPos(pos TileCoord, world World) bool {
 	}
 
 	if !posTile.Flags.Walkable() {
-		fmt.Println("HELP")
 		return false
 	}
 
@@ -97,26 +100,33 @@ func (s *Actor) CheckPos(pos TileCoord, world World) bool {
 	return true
 }
 
-func (s *Actor) SetPath(a []TileInstance) {
+func (s *ActorInstance) SetPath(a []TileInstance) {
 	s.path = a
 }
 
-func (s *Actor) GetPath() []TileInstance {
+func (s *ActorInstance) GetPath() []TileInstance {
 	return s.path
 }
 
-func NewActor(pos TileCoord, image image.Image) *Actor {
-	return &Actor{pos: pos, image: image, Dest: pos}
+func NewActor(pos TileCoord, image image.Image) *ActorInstance {
+	var actor = ActorInstance{pos: pos, Dest: pos}
+
+	actor.image = image
+
+	return &actor
 }
 
-func (a *Actor) Update(w *World) {
+func (a *ActorInstance) Update(w *World) {
 
 	if Frame%MOVEFRAME == 0 {
+		if w.GetPlayer() != a {
+			a.Dest = w.GetPlayer().pos
+		}
 		a.MoveNext(w)
 	}
 }
 
-func (a *Actor) MoveNext(w *World) {
+func (a *ActorInstance) MoveNext(w *World) {
 	path := w.FindPath(*a, a.Dest)
 
 	if len(path) > 1 {
@@ -125,5 +135,15 @@ func (a *Actor) MoveNext(w *World) {
 
 		a.SetPos(path[1].coords, *w)
 		a.SetPath(path[1:])
+	}
+}
+
+func (a *ActorInstance) DrawPath() {
+	lastTile := a.GetPos()
+	for _, tile := range a.GetPath() {
+
+		graphics.DrawLine(int32(lastTile.X)*TileWidth+TileWidth/2, int32(lastTile.Y)*TileHeight+TileHeight/2, int32(tile.coords.X)*TileWidth+TileWidth/2, int32(tile.coords.Y)*TileHeight+TileHeight/2, color.RGBA{255, 0, 0, 255})
+
+		lastTile = tile.coords
 	}
 }

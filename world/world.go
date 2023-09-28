@@ -9,17 +9,15 @@ var TilesY int
 
 var Frame int64
 
-type World struct {
-	tiles  [][]Tile
-	actors []*Actor
-
-	player int
+type Map struct {
+	tiles [][]Tile
 }
 
-func NewWorld() World {
-	var w World
+type World struct {
+	Map
+	actors []*ActorInstance
 
-	return w
+	player int
 }
 
 func (w *World) Update() {
@@ -43,6 +41,7 @@ func (w *World) Draw() {
 	}
 	for _, actor := range w.actors {
 		actor.Draw()
+		actor.DrawPath()
 	}
 }
 
@@ -54,20 +53,26 @@ func (w *World) SetTileFlags(flags TileFlags, coords TileCoord) {
 	w.tiles[coords.X][coords.Y].Flags = flags
 }
 
-func (w *World) NewActor(a *Actor) {
-	w.actors = append(w.actors, a)
+func (w *World) NewActor(a Actor, pos TileCoord) {
+	var ai ActorInstance
+
+	ai.Actor = a
+	ai.pos = pos
+	ai.Dest = ai.pos
+
+	w.actors = append(w.actors, &ai)
 }
 
-func (w *World) SetPlayer(p *Actor) {
+func (w *World) NewPlayer(a Actor, pos TileCoord) {
 	w.player = len(w.actors)
-	w.NewActor(p)
+	w.NewActor(a, pos)
 }
 
-func (w *World) GetPlayer() *Actor {
+func (w *World) GetPlayer() *ActorInstance {
 	return w.GetActors()[w.player]
 }
 
-func (w *World) GetActors() []*Actor {
+func (w *World) GetActors() []*ActorInstance {
 	return w.actors
 }
 
