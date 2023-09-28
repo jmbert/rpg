@@ -6,6 +6,8 @@ import (
 	"rpg/graphics"
 )
 
+const TILE_BORDERS bool = false
+
 type TileFlags int32
 
 func (f TileFlags) Walkable() bool {
@@ -25,8 +27,8 @@ const (
 	PLAYERTARGET = 1 << 1
 )
 
-const TileWidth = 50
-const TileHeight = 50
+var TileWidth int
+var TileHeight int
 
 var BorderColour = color.RGBA{0, 0, 0, 255}
 
@@ -55,12 +57,13 @@ func (t *Tile) Draw(xc, yc int, flags TileFlags) {
 
 	for x := 0; x < TileWidth; x++ {
 		for y := 0; y < TileHeight; y++ {
+
 			graphics.SetPixel(int32(x+startX), int32(y+startY), t.Image.At(int(x)*imgWidth/int(TileWidth), int(y)*imgHeight/int(TileHeight)))
 
 			if x > TileWidth*39/40 || y > TileHeight*39/40 || x < TileWidth*1/40 || y < TileHeight*1/40 {
 				if allFlags.PlayerTarget() {
 					graphics.SetPixel(int32(x+startX), int32(y+startY), color.RGBA{255, 0, 0, 255})
-				} else {
+				} else if TILE_BORDERS {
 					graphics.SetPixel(int32(x+startX), int32(y+startY), BorderColour)
 				}
 			}

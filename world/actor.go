@@ -10,9 +10,6 @@ import (
 
 const MOVEFRAME = 7
 
-var ActorWidth = TileWidth * 0.6
-var ActorHeight = TileHeight * 0.6
-
 type TileCoord struct {
 	X,
 	Y int
@@ -49,6 +46,9 @@ type ActorInstance struct {
 func (s *ActorInstance) Draw() {
 	var startX = s.pos.X*TileWidth + TileWidth/2
 	var startY = s.pos.Y*TileHeight + TileHeight/2
+
+	var ActorWidth = float64(TileWidth) * 0.6
+	var ActorHeight = float64(TileWidth) * 0.6
 
 	imgWidth, imgHeight := s.image.Bounds().Max.X, s.image.Bounds().Max.Y
 
@@ -142,7 +142,7 @@ func (a *ActorInstance) DrawPath() {
 	lastTile := a.GetPos()
 	for _, tile := range a.GetPath() {
 
-		graphics.DrawLine(int32(lastTile.X)*TileWidth+TileWidth/2, int32(lastTile.Y)*TileHeight+TileHeight/2, int32(tile.coords.X)*TileWidth+TileWidth/2, int32(tile.coords.Y)*TileHeight+TileHeight/2, color.RGBA{255, 0, 0, 255})
+		graphics.DrawLine(int32(lastTile.X*TileWidth+TileWidth/2), int32(lastTile.Y*TileHeight+TileHeight/2), int32(tile.coords.X*TileWidth+TileWidth/2), int32(tile.coords.Y*TileHeight+TileHeight/2), color.RGBA{255, 0, 0, 255})
 
 		lastTile = tile.coords
 	}

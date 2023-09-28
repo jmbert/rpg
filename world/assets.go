@@ -140,8 +140,8 @@ func DecipherWorldMap(file string, wmap *Map, indexMap map[int]Tile) {
 	}
 	filecontents = filecontents[4:]
 
-	TilesX = graphics.Width / TileWidth
-	TilesY = graphics.Height / TileHeight
+	TileWidth = graphics.Width / TilesX
+	TileHeight = graphics.Height / TilesY
 
 	for y := 0; y < TilesY; y++ {
 		var row []Tile

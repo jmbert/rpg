@@ -4,8 +4,8 @@ import (
 	"errors"
 )
 
-var TilesX int
-var TilesY int
+const TilesX = 10
+const TilesY = 10
 
 var Frame int64
 

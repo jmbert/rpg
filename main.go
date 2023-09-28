@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"rpg/graphics"
 	"rpg/world"
 
@@ -22,7 +23,7 @@ func move(event graphics.Event) {
 
 	pCoordX, pCoordY := mbEvent.X, mbEvent.Y
 
-	coordX, coordY := pCoordX/world.TileWidth, pCoordY/world.TileHeight
+	coordX, coordY := int(pCoordX)/world.TileWidth, int(pCoordY)/world.TileHeight
 
 	dest := world.TileCoord{X: int(coordX), Y: int(coordY)}
 
@@ -30,7 +31,7 @@ func move(event graphics.Event) {
 }
 
 func main() {
-	graphics.Initialise(500, 500, 0, sdl.RENDERER_PRESENTVSYNC|sdl.RENDERER_ACCELERATED)
+	graphics.Initialise(750, 750, 0, sdl.RENDERER_PRESENTVSYNC|sdl.RENDERER_ACCELERATED, os.Args[0])
 
 	wworld, err := world.InterpretAssets()
 	globalWorld = &wworld
