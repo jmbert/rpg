@@ -18,6 +18,8 @@ func MainloopIter(inputMap KeyInput) uint {
 			switch winEvent.Event {
 			case sdl.WINDOWEVENT_CLOSE:
 				return 1
+			case sdl.WINDOWEVENT_RESIZED:
+				Width, Height = int(winEvent.Data1), int(winEvent.Data2)
 			}
 		case sdl.MOUSEBUTTONDOWN:
 			mEvent := event.(*sdl.MouseButtonEvent)

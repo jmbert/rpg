@@ -31,7 +31,7 @@ func move(event graphics.Event) {
 }
 
 func main() {
-	graphics.Initialise(750, 750, 0, sdl.RENDERER_PRESENTVSYNC|sdl.RENDERER_ACCELERATED, os.Args[0])
+	graphics.Initialise(750, 750, sdl.WINDOW_RESIZABLE, sdl.RENDERER_PRESENTVSYNC|sdl.RENDERER_ACCELERATED, os.Args[0])
 
 	wworld, err := world.InterpretAssets()
 	globalWorld = &wworld

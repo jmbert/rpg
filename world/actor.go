@@ -48,7 +48,7 @@ func (s *ActorInstance) Draw() {
 	var startY = s.pos.Y*TileHeight + TileHeight/2
 
 	var ActorWidth = float64(TileWidth) * 0.6
-	var ActorHeight = float64(TileWidth) * 0.6
+	var ActorHeight = float64(TileHeight) * 0.6
 
 	imgWidth, imgHeight := s.image.Bounds().Max.X, s.image.Bounds().Max.Y
 

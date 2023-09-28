@@ -8,7 +8,6 @@ import (
 	_ "image/png"
 	"log"
 	"os"
-	"rpg/graphics"
 	"strconv"
 	"strings"
 	"unicode"
@@ -139,9 +138,6 @@ func DecipherWorldMap(file string, wmap *Map, indexMap map[int]Tile) {
 		log.Fatalln(err)
 	}
 	filecontents = filecontents[4:]
-
-	TileWidth = graphics.Width / TilesX
-	TileHeight = graphics.Height / TilesY
 
 	for y := 0; y < TilesY; y++ {
 		var row []Tile

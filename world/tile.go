@@ -48,6 +48,9 @@ type TileInstance struct {
 }
 
 func (t *Tile) Draw(xc, yc int, flags TileFlags) {
+	TileWidth = graphics.Width / TilesX
+	TileHeight = graphics.Height / TilesY
+
 	startX := xc * TileWidth
 	startY := yc * TileHeight
 
